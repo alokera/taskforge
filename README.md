@@ -2,8 +2,6 @@
 
 > A Redis-backed background job queue built from scratch in TypeScript, with retries, exponential backoff, delayed jobs, concurrency, graceful shutdown, and a live dashboard.
 
-![CI](https://github.com/alokera/taskforge/actions/workflows/ci.yml/badge.svg)
-
 <!-- Add a screenshot or GIF of the dashboard here: ![Dashboard](docs/dashboard.gif) -->
 
 Libraries like BullMQ and Sidekiq power background work in most production apps: sending emails, generating reports, processing uploads. TaskForge re-implements the core of such a queue to show **how they work under the hood**: atomic state transitions with Lua, blocking pops, retry scheduling, and safe concurrency across many workers.
