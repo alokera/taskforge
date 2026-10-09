@@ -1,0 +1,17 @@
+{
+  "name": "taskforge",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:dashboard": "npm run dev -w dashboard",
+    "dev:worker": "npm run dev -w worker",
+    "test": "npm test -w @taskforge/core",
+    "lint": "npm run lint -w dashboard",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "build": "npm run build -w dashboard"
+  }
+}
