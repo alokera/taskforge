@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@taskforge/core": "*"
+    "@taskforge/core": "*",
+    "@taskforge/demo-jobs": "*"
   },
   "devDependencies": {
     "tsx": "^4.23.15"

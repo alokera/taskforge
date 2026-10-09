@@ -8,6 +8,19 @@
 
 Libraries like BullMQ and Sidekiq power background work in most production apps: sending emails, generating reports, processing uploads. TaskForge re-implements the core of such a queue to show **how they work under the hood**: atomic state transitions with Lua, blocking pops, retry scheduling, and safe concurrency across many workers.
 
+## Why use a queue? (live demo)
+
+The dashboard includes a **Queue vs no queue** page (`/compare`) that runs the same signup flow two ways. A user signs up and the app sends a welcome email through a provider that is slow (1.5–3s) and unreliable (fails 40% of the time). Both sides call the exact same `sendWelcomeEmail()` function:
+
+| | ❌ Without a queue | ✅ With a queue |
+|---|---|---|
+| The signup request… | sends the email itself | only calls `queue.add()` |
+| User waits | 1.5–3s per signup | ~10–70ms |
+| Provider fails | user sees "Something went wrong", email lost | worker retries with backoff, user never notices |
+| Measured, 5 signups at once | waits of 1.6–2.9s, 1 of 5 got an error | all 5 answered in ~0.07s; 5 of 5 emails delivered, 3 provider failures retried |
+
+For each queued signup, the page shows a live timeline: *queued → worker sending (attempt 1) → attempt 1 failed, retrying… → delivered after 2 attempts*.
+
 ## Features
 
 - ⚛️ **Atomic state transitions:** every move between states is a Redis Lua script, so a job is never lost or in two states at once
@@ -94,8 +107,9 @@ packages/core/          # The queue library
   src/worker.ts         #   Concurrent consumer with backoff and graceful shutdown
   src/keys.ts           #   Redis key layout
   src/*.test.ts         #   Integration tests against real Redis
-apps/worker/            # Demo worker with simulated jobs (emails, reports, images)
-apps/dashboard/         # Next.js dashboard + API routes
+packages/demo-jobs/     # Simulated workloads shared by the worker and the dashboard
+apps/worker/            # Demo worker process
+apps/dashboard/         # Next.js dashboard + API routes, incl. the /compare demo
 docker-compose.yml      # Local Redis
 ```
 
@@ -117,6 +131,7 @@ Click **+ 10 demo jobs** in the dashboard and watch them flow through the states
 - Start a second worker (`npm run dev:worker` in another terminal) and see jobs spread across both.
 - Press **Ctrl+C** on a worker while jobs are active: it finishes them before exiting.
 - Open a failed `sync-crm` job to see its stack trace, then hit **Retry**.
+- Open **Queue vs no queue** and click "Sign up 5 at once" on both sides.
 
 Configuration is via environment variables, all optional (see `.env.example`):
 

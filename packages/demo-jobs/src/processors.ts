@@ -1,4 +1,4 @@
-import type { Job } from "@taskforge/core";
+import type { Job, JobOptions } from "@taskforge/core";
 
 // Simulated workloads with realistic timing and failure rates, so the dashboard has
 // something interesting to show: retries, backoff, progress, and permanent failures.
@@ -27,6 +27,21 @@ async function resizeImage(job: Job<{ imageUrl: string; width: number }>) {
   return { resizedUrl: `${job.data.imageUrl}?w=${job.data.width}`, width: job.data.width };
 }
 
+/** Retry policy for welcome emails when they go through the queue. */
+export const WELCOME_EMAIL_JOB_OPTIONS: JobOptions = { attempts: 5, backoff: { type: "exponential", delay: 500 } };
+export const WELCOME_EMAIL_FAILURE_RATE = 0.4;
+
+/**
+ * A slow, unreliable email provider (1.5–3s, fails 40% of the time).
+ * The comparison page calls this both directly inside a request ("without a queue")
+ * and through a job ("with a queue"), so both sides do exactly the same work.
+ */
+export async function sendWelcomeEmail(to: string) {
+  await sleep(between(1500, 3000));
+  if (Math.random() < WELCOME_EMAIL_FAILURE_RATE) throw new Error("Email provider timed out (504)");
+  return { messageId: `msg_${Date.now().toString(36)}`, to };
+}
+
 async function syncCrm() {
   await sleep(between(500, 1500));
   // Fails permanently, to demonstrate the failed state and manual retry from the dashboard.
@@ -38,6 +53,7 @@ const processors: Record<string, (job: Job<never>) => Promise<unknown>> = {
   "generate-report": generateReport,
   "resize-image": resizeImage,
   "sync-crm": syncCrm,
+  "welcome-email": (job: Job<{ to: string }>) => sendWelcomeEmail(job.data.to),
 };
 
 export async function processJob(job: Job<unknown>): Promise<unknown> {
