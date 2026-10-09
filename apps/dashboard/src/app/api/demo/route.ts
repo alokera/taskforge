@@ -1,4 +1,4 @@
-import { makeDemoJob } from "@/lib/demo";
+import { makeDemoJob } from "@taskforge/demo-jobs";
 import { getQueue } from "@/lib/queue";
 
 const MAX_JOBS = 100;

@@ -1,5 +1,5 @@
 import { Worker } from "@taskforge/core";
-import { processJob } from "./processors";
+import { processJob } from "@taskforge/demo-jobs";
 
 const queueName = process.env.QUEUE_NAME ?? "demo";
 const concurrency = Number(process.env.WORKER_CONCURRENCY ?? 5);

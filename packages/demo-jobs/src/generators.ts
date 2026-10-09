@@ -9,7 +9,7 @@ interface DemoJob {
 const pick = <T,>(items: T[]): T => items[Math.floor(Math.random() * items.length)];
 const users = ["asha", "rohan", "meera", "vikram", "zoya", "kabir"];
 
-// Each type exercises a different queue feature (see apps/worker/src/processors.ts).
+// Each type exercises a different queue feature (see ./processors.ts).
 const generators: (() => DemoJob)[] = [
   () => ({
     name: "send-email",
